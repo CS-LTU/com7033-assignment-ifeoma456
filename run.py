@@ -14,7 +14,7 @@ def home():
     return '''
         <h1> Welcome to Flask in jupyter! </h1>
         <p> This is a Simple Webpage Served using Flask inside Jupyter.</p>
-        <a href=" /about">Go to About Page</a>
+        <a href=" /about">Go to About Page and the dashboard</a>
         '''
 @app.route('/about')
 def about():
