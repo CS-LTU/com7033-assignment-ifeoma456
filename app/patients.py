@@ -87,8 +87,8 @@ def edit_patient(patient_id):
 
     return render_template('patient_form.html', patient=patient)
 
-# =======================
-# DELETE PATIENT
+# ===========================
+# DELETE PATIENT @@2
 # =======================
 @patients_bp.route('/delete/<patient_id>', methods=['POST'])
 @login_required
@@ -97,3 +97,5 @@ def delete_patient(patient_id):
     coll.delete_one({"_id": ObjectId(patient_id)})
     flash('Patient deleted successfully!', 'danger')
     return redirect(url_for('patients.list_patients'))
+
+
