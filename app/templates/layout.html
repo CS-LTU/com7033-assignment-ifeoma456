@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title or "Secure App" }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 antialiased text-gray-800">
+
+<!-- Header -->
+<header class="bg-white shadow">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center py-4">
+      <a href="/" class="flex items-center space-x-3">
+        <div class="text-2xl">🏥</div>
+        <div class="font-semibold text-lg">Secure Patient System</div>
+      </a>
+
+      <nav class="flex items-center space-x-4">
+        {% if session.user %}
+          <a href="{{ url_for('patients.list_patients') }}" class="text-gray-700 hover:text-purple-600 font-medium">Patients</a>
+          <a href="{{ url_for('auth.logout') }}" class="text-gray-700 hover:text-purple-600 font-medium">Logout</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="text-gray-700 hover:text-purple-600 font-medium">Login</a>
+          <a href="{{ url_for('auth.register') }}" class="text-gray-700 hover:text-purple-600 font-medium">Register</a>
+        {% endif %}
+      </nav>
+    </div>
+  </div>
+</header>
+
+<!-- Flash messages -->
+<div class="max-w-4xl max-width mx-auto ">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="space-y-3">
+        {% for category, message in messages %}
+          {% set bg = 'bg-blue-50' %}
+          {% set border = 'border-blue-200' %}
+          {% set text = 'text-blue-800' %}
+          {% if category in ['success', 'ok', 'green'] %}
+            {% set bg = 'bg-green-50' %}
+            {% set border = 'border-green-200' %}
+            {% set text = 'text-green-800' %}
+          {% elif category in ['danger', 'error', 'red'] %}
+            {% set bg = 'bg-red-50' %}
+            {% set border = 'border-red-200' %}
+            {% set text = 'text-red-800' %}
+          {% elif category in ['warning', 'warn', 'yellow'] %}
+            {% set bg = 'bg-yellow-50' %}
+            {% set border = 'border-yellow-200' %}
+            {% set text = 'text-yellow-800' %}
+          {% endif %}
+
+          <div class="p-4 rounded-md border {{ border }} {{ bg }}">
+            <div class="flex items-start justify-between">
+              <div class="{{ text }}">{{ message }}</div>
+              <button onclick="this.parentElement.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
+
+<!-- Main content -->
+<main class="max-w-4xl mx-auto ">
+  {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>

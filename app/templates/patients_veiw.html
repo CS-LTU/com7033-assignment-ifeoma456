@@ -1,0 +1,40 @@
+<table class="table table-bordered mt-4">
+    <thead class="table-light">
+        <tr>
+            <th>ID</th>
+            <th>Gender</th>
+            <th>Age</th>
+            <th>Hypertension</th>
+            <th>Married</th>
+            <th>Work Type</th>
+            <th>Residence</th>
+            <th>Glucose</th>
+            <th>BMI</th>
+            <th>Smoking</th>
+            <th>Stroke Risk</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in patients %}
+        <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.gender }}</td>
+            <td>{{ p.age }}</td>
+            <td>{{ p.hypertension }}</td>
+            <td>{{ p.ever_married }}</td>
+            <td>{{ p.work_type }}</td>
+            <td>{{ p.Residence_type }}</td>
+            <td>{{ p.avg_glucose_level }}</td>
+            <td>{{ p.bmi }}</td>
+            <td>{{ p.smoking_status }}</td>
+            <td>{{ 'High' if p.stroke_prediction == 1 else 'Low' }}</td>
+            <td>
+                <a href="{{ url_for('patients.edit_patient', patient_id=p.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="{{ url_for('patients.delete_patient', patient_id=p.id) }}" class="btn btn-sm btn-danger"
+                   onclick="return confirm('Are you sure you want to delete this record?');">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
