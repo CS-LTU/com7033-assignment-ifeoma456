@@ -4,7 +4,7 @@ import os
 
 app = create_app()
 
-print(app)
+
 # =======================
 # RUN THE APP
 # =======================

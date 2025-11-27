@@ -1,15 +1,15 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 # from pymongo import MongoClient
 import os
-from bson.objectid import ObjectId  # for working with MongoDB _id
+from bson.objectid import ObjectId
+from pymongo import MongoClient  # for working with MongoDB _id
 # from app.patients import patients_bp
 
 
-
+patients_bp = Blueprint('patients', __name__, template_folder='templates')
 def get_mongo():
     uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017')
-    client =  ''
-    # MongoClient(uri)
+    client =  MongoClient(uri)
     db = client['secure_app']
     return db['patients']
 
@@ -25,12 +25,14 @@ def login_required(fn):
 # =======================
 # LIST PATIENTS
 # =======================
-@patients_bp.route('/')
+@patients_bp.route('/list_patients')
 @login_required
 def list_patients():
+    if 'user' not in session:
+        return redirect(url_for('login'))
     coll = get_mongo()
     patients = list(coll.find())
-    return render_template('patients.html', patients=patients)
+    return render_template('patient.html', patients=patients)
 
 # =======================
 # ADD NEW PATIENT
@@ -56,7 +58,9 @@ def add_patient():
         coll.insert_one(doc)
         flash('Patient added successfully!', 'success')
         return redirect(url_for('patients.list_patients'))
-    return render_template('patient_form.html')
+    return render_template('add_patient_form.html')
+
+
 
 # =======================
 # EDIT PATIENT
@@ -85,7 +89,7 @@ def edit_patient(patient_id):
         flash('Patient updated successfully!', 'info')
         return redirect(url_for('patients.list_patients'))
 
-    return render_template('patient_form.html', patient=patient)
+    return render_template('edit_patient_form.html', patient=patient)
 
 # ===========================
 # DELETE PATIENT @@2
