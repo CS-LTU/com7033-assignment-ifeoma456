@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Stroke Prediction System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </h2>
+        <p class="text-muted">Welcome back, {{ current_user.username }}!</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Total Patients</h6>
+                        <h2 class="card-title mb-0">{{ stats.total_patients|default(0) }}</h2>
+                    </div>
+                    <i class="bi bi-people" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{{ url_for('patients_list') }}" class="text-white text-decoration-none">
+                    View all <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Stroke Cases</h6>
+                        <h2 class="card-title mb-0">{{ stats.stroke_patients|default(0) }}</h2>
+                    </div>
+                    <i class="bi bi-exclamation-triangle" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                {% if stats.total_patients and stats.total_patients > 0 %}
+                    {{ "%.1f"|format((stats.stroke_patients / stats.total_patients * 100)) }}% of total
+                {% else %}
+                    0% of total
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">No Stroke</h6>
+                        <h2 class="card-title mb-0">{{ stats.no_stroke_patients|default(0) }}</h2>
+                    </div>
+                    <i class="bi bi-check-circle" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                {% if stats.total_patients and stats.total_patients > 0 %}
+                    {{ "%.1f"|format((stats.no_stroke_patients / stats.total_patients * 100)) }}% of total
+                {% else %}
+                    0% of total
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Gender Ratio</h6>
+                        <h2 class="card-title mb-0">
+                            {{ stats.male_patients|default(0) }}/{{ stats.female_patients|default(0) }}
+                        </h2>
+                    </div>
+                    <i class="bi bi-gender-ambiguous" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                Male / Female
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{{ url_for('add_patient') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                <i class="bi bi-person-plus text-primary"></i> Add New Patient
+                            </h6>
+                            <i class="bi bi-chevron-right"></i>
+                        </div>
+                        <p class="mb-1 small text-muted">Register a new patient in the system</p>
+                    </a>
+                    <a href="{{ url_for('patients_list') }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">
+                                <i class="bi bi-list text-success"></i> View All Patients
+                            </h6>
+                            <i class="bi bi-chevron-right"></i>
+                        </div>
+                        <p class="mb-1 small text-muted">Browse and search patient records</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-shield-check"></i> Security Features
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        Password Hashing
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        CSRF Protection
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        Input Validation
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        XSS Prevention
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle text-success"></i>
+                        Secure Sessions
+                    </li>
+                    <li class="mb-0">
+                        <i class="bi bi-check-circle text-success"></i>
+                        Error Logging
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Patients - Stroke Prediction System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <h2>
+            <i class="bi bi-people"></i> Patient Records
+        </h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{{ url_for('add_patient') }}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Add New Patient
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('patients_list') }}" class="row g-3">
+            <div class="col-md-10">
+                <input type="text" class="form-control" name="search" placeholder="Search by ID, gender, work type, or smoking status..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if patients %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Gender</th>
+                        <th>Age</th>
+                        <th>Hypertension</th>
+                        <th>Heart Disease</th>
+                        <th>Work Type</th>
+                        <th>BMI</th>
+                        <th>Stroke</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for patient in patients %}
+                    <tr>
+                        <td>{{ patient.id }}</td>
+                        <td>
+                            {% if patient.gender == 'Male' %}
+                                <i class="bi bi-gender-male text-primary"></i>
+                            {% elif patient.gender == 'Female' %}
+                                <i class="bi bi-gender-female text-danger"></i>
+                            {% else %}
+                                <i class="bi bi-gender-ambiguous"></i>
+                            {% endif %}
+                            {{ patient.gender }}
+                        </td>
+                        <td>{{ patient.age }}</td>
+                        <td>
+                            {% if patient.hypertension == 1 %}
+                                <span class="badge bg-warning">Yes</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if patient.heart_disease == 1 %}
+                                <span class="badge bg-warning">Yes</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ patient.work_type }}</td>
+                        <td>{{ patient.bmi }}</td>
+                        <td>
+                            {% if patient.stroke == 1 %}
+                                <span class="badge bg-danger">Yes</span>
+                            {% else %}
+                                <span class="badge bg-success">No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('patient_detail', patient_id=patient._id) }}" class="btn btn-info" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ url_for('edit_patient', patient_id=patient._id) }}" class="btn btn-warning" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-danger" title="Delete" onclick="confirmDelete('{{ patient._id }}', '{{ patient.id }}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if total_pages > 1 %}
+    <div class="card-footer">
+        <nav>
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('patients_list', page=page-1, search=search_query) }}">
+                        Previous
+                    </a>
+                </li>
+
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ p }}</span>
+                        </li>
+                    {% elif p <= 3 or p > total_pages - 3 or (p >= page - 1 and p <= page + 1) %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('patients_list', page=p, search=search_query) }}">
+                                {{ p }}
+                            </a>
+                        </li>
+                    {% elif p == 4 or p == total_pages - 3 %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('patients_list', page=page+1, search=search_query) }}">
+                        Next
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="alert alert-info text-center">
+    <h5>
+        <i class="bi bi-info-circle"></i> No Patients Found
+    </h5>
+    <p class="mb-0">
+        {% if search_query %}
+            No patients match your search criteria.
+            <a href="{{ url_for('patients_list') }}">Clear search</a>
+        {% else %}
+            No patients in the database yet.
+            <a href="{{ url_for('add_patient') }}">Add your first patient</a>
+        {% endif %}
+    </p>
+</div>
+{% endif %}
+
+<form id="deleteForm" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(patientId, patientName) {
+    if (confirm('Are you sure you want to delete patient ' + patientName + '? This action cannot be undone.')) {
+        const form = document.getElementById('deleteForm');
+        form.action = '/patient/delete/' + patientId;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

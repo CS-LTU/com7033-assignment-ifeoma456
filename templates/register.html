@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Stroke Prediction System{% endblock %}
+
+{% block content %}
+<div class="row mt-5">
+    <div class="col-md-6 offset-md-3">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-person-plus"></i> Create Account
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('register') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-person"></i>
+                            </span>
+                            <input type="text" class="form-control" id="username" name="username"
+                                   required minlength="3" maxlength="50" pattern="[a-zA-Z0-9_]+"
+                                   title="Username can only contain letters, numbers, and underscores">
+                        </div>
+                        <div class="form-text">3-50 characters, letters, numbers, and underscores only</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password" name="password"
+                                   required minlength="8">
+                        </div>
+                        <div class="form-text">
+                            Must be at least 8 characters with uppercase, lowercase, and digits
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirm Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+                            <input type="password" class="form-control" id="confirm_password"
+                                   name="confirm_password" required minlength="8">
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> Register
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                Already have an account?
+                <a href="{{ url_for('login') }}">Login here</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

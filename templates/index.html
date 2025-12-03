@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Stroke Prediction System{% endblock %}
+
+{% block content %}
+<div class="row mt-5">
+    <div class="col-md-8 offset-md-2 text-center">
+        <h1 class="display-4 mb-4">
+            <i class="bi bi-heart-pulse text-danger"></i>
+            Stroke Prediction System
+        </h1>
+        <p class="lead text-muted mb-5">
+            A secure web-based application for managing patient stroke prediction data.
+            Supporting healthcare professionals in recording, managing, and analyzing patient information.
+        </p>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card h-100 border-primary">
+                    <div class="card-body text-center">
+                        <i class="bi bi-shield-check text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Secure Data</h5>
+                        <p class="card-text">
+                            Advanced encryption and authentication to protect sensitive patient information
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-success">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people text-success" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Patient Management</h5>
+                        <p class="card-text">
+                            Complete CRUD operations for managing patient records efficiently
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-info">
+                    <div class="card-body text-center">
+                        <i class="bi bi-graph-up text-info" style="font-size: 3rem;"></i>
+                        <h5 class="card-title mt-3">Data Analytics</h5>
+                        <p class="card-text">
+                            Analyze patient data to predict stroke likelihood and support preventive care
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 d-md-block">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg px-5 me-2">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+            <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg px-5">
+                <i class="bi bi-person-plus"></i> Register
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 pt-5">
+    <div class="col-md-8 offset-md-2">
+        <div class="alert alert-info">
+            <h5 class="alert-heading">
+                <i class="bi bi-info-circle"></i> About This System
+            </h5>
+            <p>
+                According to the World Health Organization (WHO), stroke is the second leading cause of death
+                globally. This system is designed to help healthcare professionals manage patient data covering
+                demographics, medical history, and lifestyle factors to predict stroke likelihood and assist
+                in preventive healthcare.
+            </p>
+            <hr>
+            <p class="mb-0 small">
+                <strong>Security Features:</strong> Password hashing, CSRF protection, input validation,
+                XSS prevention, secure session handling, and comprehensive error logging.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
