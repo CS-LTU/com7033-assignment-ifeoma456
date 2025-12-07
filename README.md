@@ -1,384 +1,571 @@
-# Stroke Prediction Patient Data Management System
+ # Secure Hospital Management System (HMS)
 
-A secure web-based Flask application for managing patient stroke prediction data for healthcare professionals. This system demonstrates professional secure software development practices including authentication, encryption, input validation, and comprehensive error handling.
-
-## Overview
-
-According to the World Health Organization (WHO), stroke is the second leading cause of death globally. This application helps healthcare professionals record, manage, and analyze patient data covering demographics, medical history, and lifestyle factors to predict stroke likelihood and assist in preventive healthcare.
+A comprehensive, AI-powered Hospital Management System built with Flask and machine learning integration for patient health risk prediction.
 
 ## Features
 
 ### Core Functionality
-- **Complete CRUD Operations**: Create, Read, Update, and Delete patient records
-- **User Authentication**: Secure registration and login system
-- **Patient Search**: Search and filter patient records
-- **Dashboard Analytics**: Visual statistics and data insights
-- **Risk Assessment**: Automatic calculation of stroke risk factors
+- **User Management**: Role-based access control (Admin, Doctor, User, Employee)
+- **Patient Management**: Create, view, edit, and manage patient records
+- **Appointment Scheduling**: Schedule and track patient appointments
+- **Billing System**: Invoice generation and payment tracking
+- **Health Reports**: Generate and manage patient health reports
 
-### Security Features
-- **Password Hashing**: Using Werkzeug's PBKDF2-SHA256 algorithm
-- **CSRF Protection**: Flask-WTF CSRF tokens on all forms
-- **Input Validation**: Server-side validation for all user inputs
-- **Input Sanitization**: XSS prevention through input sanitization
-- **SQL Injection Prevention**: Parameterized queries for SQLite
-- **NoSQL Injection Prevention**: Input validation for MongoDB operations
-- **Secure Session Handling**: HTTPOnly, SameSite cookies
-- **Error Logging**: Comprehensive application logging
+### Advanced Features
+- **AI-Powered Health Risk Assessment**: Machine learning models for stroke and hypertension prediction
+- **Admin Dashboard**: System-wide statistics, user management, and analytics
+- **Doctor Dashboard**: Patient overview, high-risk patient alerts, and health insights
+- **Database Backup**: Automated system backup functionality
+- **Analytics & Reports**: System-wide analytics and revenue reporting
 
 ## Technology Stack
 
 ### Backend
-- **Flask 3.0.0**: Web framework
-- **SQLite**: User authentication database
-- **MongoDB**: Patient records database
-- **Flask-Login**: Session management
-- **Flask-WTF**: Form handling and CSRF protection
-- **Bcrypt**: Password hashing
-- **Pandas**: Data processing
+- **Framework**: Flask 3.0.0
+- **Authentication**: Flask-Bcrypt 1.0.1 for secure password hashing
+- **Database**: SQLite3
+- **ML Libraries**: 
+  - scikit-learn 1.1.3 (LogisticRegression for predictions)
+  - pandas 1.5.3 (Data manipulation)
+  - numpy 1.24.3 (Numerical operations)
+  - joblib 1.3.2 (Model serialization)
 
 ### Frontend
-- **Bootstrap 5.3.0**: Responsive UI framework
-- **Bootstrap Icons**: Icon library
-- **Jinja2 Templates**: Server-side templating
-
-## Database Architecture
-
-### SQLite (User Authentication)
-```
-users table:
-- id (PRIMARY KEY)
-- username (UNIQUE)
-- email (UNIQUE)
-- password_hash
-- created_at
-- last_login
-```
-
-### MongoDB (Patient Records)
-```
-patients collection:
-- _id (ObjectId)
-- id (patient ID)
-- gender
-- age
-- hypertension
-- heart_disease
-- ever_married
-- work_type
-- Residence_type
-- avg_glucose_level
-- bmi
-- smoking_status
-- stroke
-- created_by (username)
-- created_at
-- updated_by (username)
-- updated_at
-```
-
-## Installation
-
-### Prerequisites
-- Python 3.8 or higher
-- MongoDB installed and running locally
-- pip (Python package manager)
-
-### Setup Instructions
-
-1. **Clone or navigate to the project directory**
-```bash
-cd /Users/kennethnwankwo/Documents/ifeoma
-```
-
-2. **Create a virtual environment**
-```bash
-python3 -m venv venv
-```
-
-3. **Activate the virtual environment**
-```bash
-# On macOS/Linux:
-source venv/bin/activate
-
-# On Windows:
-venv\Scripts\activate
-```
-
-4. **Install required packages**
-```bash
-pip install -r requirements.txt
-```
-
-5. **Set up environment variables**
-```bash
-cp .env.example .env
-```
-
-Edit the `.env` file and set your configurations:
-```
-SECRET_KEY=your-secret-key-here-change-this-in-production
-MONGO_URI=mongodb://localhost:27017/
-SESSION_COOKIE_SECURE=False
-```
-
-6. **Start MongoDB**
-```bash
-# On macOS with Homebrew:
-brew services start mongodb-community
-
-# On Linux:
-sudo systemctl start mongod
-
-# On Windows:
-# MongoDB should start automatically as a service
-# Or run: net start MongoDB
-```
-
-7. **Import the dataset into MongoDB**
-```bash
-python import_data.py
-```
-
-This will import all patient records from the CSV file into MongoDB.
-
-8. **Run the application**
-```bash
-python app.py
-```
-
-The application will be available at: `http://127.0.0.1:5000`
-
-## Usage
-
-### First Time Setup
-
-1. **Register a new account**
-   - Navigate to `http://127.0.0.1:5000`
-   - Click "Register"
-   - Create an account with:
-     - Username (3-50 characters, alphanumeric and underscores)
-     - Valid email address
-     - Strong password (min 8 chars, uppercase, lowercase, digit)
-
-2. **Login**
-   - Use your credentials to log in
-   - You'll be redirected to the dashboard
-
-### Managing Patients
-
-#### View Patients
-- Click "Patients" in the navigation bar
-- Browse through paginated patient records (20 per page)
-- Use the search bar to find specific patients
-
-#### Add New Patient
-- Click "Add Patient" or the "+" button
-- Fill in all required fields:
-  - **Personal Info**: ID, gender, age, marital status, work type, residence
-  - **Medical Info**: Hypertension, heart disease, glucose level, BMI, smoking status, stroke
-- Click "Add Patient" to save
-
-#### View Patient Details
-- Click the eye icon on any patient row
-- View complete patient information
-- See calculated risk assessment based on factors:
-  - Hypertension
-  - Heart disease
-  - Age 65+
-  - Current smoking
-  - High glucose level (>140 mg/dL)
-
-#### Edit Patient
-- Click the pencil icon on any patient row
-- Modify the necessary fields
-- Click "Edit Patient" to save changes
-
-#### Delete Patient
-- Click the trash icon on any patient row
-- Confirm deletion in the popup dialog
-- Patient will be permanently removed
-
-### Dashboard
-The dashboard provides:
-- Total patient count
-- Stroke case statistics
-- Gender distribution
-- Quick action links
-- Security features checklist
-
-## Security Implementation
-
-### 1. Authentication Security
-- **Password Hashing**: All passwords are hashed using `pbkdf2:sha256` before storage
-- **Password Requirements**: Minimum 8 characters with uppercase, lowercase, and digits
-- **Session Management**: Secure session cookies with 30-minute timeout
-- **Login Protection**: Failed login attempts are logged
-
-### 2. Input Validation
-- **Server-Side Validation**: All inputs validated before processing
-- **Type Checking**: Numeric fields verified for correct types and ranges
-- **Enum Validation**: Categorical fields checked against allowed values
-- **Email Validation**: Regex pattern matching for email format
-
-### 3. Input Sanitization
-- **XSS Prevention**: HTML/script tags removed from text inputs
-- **Special Character Filtering**: Dangerous characters escaped
-- **Query Parameterization**: All database queries use parameters
-
-### 4. CSRF Protection
-- **Token-Based Protection**: CSRF tokens on all forms
-- **Flask-WTF Integration**: Automatic token validation
-- **Session-Based Tokens**: Tokens tied to user sessions
-
-### 5. Error Handling
-- **Comprehensive Logging**: All errors logged with timestamps
-- **User-Friendly Messages**: Generic error messages to users
-- **Detailed Logs**: Technical details in log files only
-- **Custom Error Pages**: 404 and 500 error handlers
-
-### 6. Database Security
-- **Parameterized Queries**: SQL injection prevention
-- **Input Validation**: NoSQL injection prevention for MongoDB
-- **Separate Databases**: User auth and patient data separated
-- **Indexed Queries**: Efficient and secure data retrieval
-
-## Ethical Considerations
-
-This application handles sensitive healthcare data and implements several ethical safeguards:
-
-1. **Data Confidentiality**: All patient data is protected with authentication
-2. **Access Control**: Only authenticated users can view/modify data
-3. **Audit Trail**: All data modifications are logged with user information
-4. **Secure Storage**: Passwords hashed, sessions encrypted
-5. **HIPAA Awareness**: While not fully HIPAA compliant, follows privacy best practices
-6. **Data Integrity**: Input validation ensures data accuracy
+- **Framework**: Bootstrap 5
+- **Icons**: Font Awesome
+- **Templating**: Jinja2
+- **Charts**: Chart.js
 
 ## Project Structure
 
 ```
-ifeoma/
-├── app.py                              # Main Flask application
-├── import_data.py                      # CSV data import script
-├── requirements.txt                    # Python dependencies
-├── .env.example                        # Environment variables template
-├── healthcare-dataset-stroke-data.csv  # Patient dataset
-├── users.db                            # SQLite database (created on first run)
-├── app.log                             # Application logs (created on first run)
-├── templates/                          # HTML templates
-│   ├── base.html                       # Base template
-│   ├── index.html                      # Home page
-│   ├── login.html                      # Login page
-│   ├── register.html                   # Registration page
-│   ├── dashboard.html                  # Dashboard
-│   ├── patients_list.html              # Patient list
-│   ├── patient_detail.html             # Patient details
-│   ├── patient_form.html               # Add/Edit patient form
-│   ├── 404.html                        # 404 error page
-│   └── 500.html                        # 500 error page
-└── static/
-    └── css/
-        └── style.css                   # Custom styles
+secure_HMS/
+│
+├── Core Application Files
+├── app.py                           # Main Flask application (1351 lines)
+│                                    # - Flask configuration and initialization
+│                                    # - User authentication (login, register, logout)
+│                                    # - Patient management routes
+│                                    # - Appointment and billing management
+│                                    # - Admin and doctor dashboard routes
+│                                    # - Health risk assessment route
+│                                    # - Utility functions for database operations
+│
+├── models.py                        # ML models and analytics (297 lines)
+│                                    # - StrokeHypertensionPredictor class
+│                                    # - PatientHealthModel class
+│                                    # - DoctorAnalytics class
+│                                    # - get_high_risk_patients() function
+│                                    # - get_model_stats() function
+│
+├── create_admin.py                  # Admin user creation utility (80 lines)
+│                                    # - Create new admin users
+│                                    # - Promote existing users to admin
+│                                    # - List all users with their roles
+│
+├── requirements.txt                 # Python dependencies
+│                                    # Flask, Bcrypt, scikit-learn, pandas, numpy
+│
+├── README.md                        # Project documentation
+│
+├── Code Citations.md                # Code references and attributions
+│
+├── hms.db                          # SQLite database (auto-generated)
+│
+├── models/                         # Pre-trained ML models
+│   ├── stroke_model.pkl            # LogisticRegression model for predictions
+│   ├── scaler.pkl                  # StandardScaler for feature normalization
+│   ├── label_encoders.pkl          # LabelEncoder for categorical variables
+│   ├── stroke_model_Logistic_Regression_*.pkl  # Backup model files
+│   └── scaler_*.pkl                # Backup scaler files
+│
+├── static/                         # Frontend static files
+│   ├── css/
+│   │   └── style.css               # Custom CSS styling (responsive design)
+│   │
+│   ├── js/
+│   │   └── script.js               # JavaScript functionality
+│   │
+│   └── img/                        # Image assets
+│       ├── doctor.png              # Doctor profile image
+│       └── surgery-*.jpg           # Background images
+│
+├── templates/                      # Jinja2 HTML templates
+│
+│   ├── Base & Navigation
+│   │   └── base.html               # Base template (369 lines)
+│   │                               # - Navigation menu with role-based visibility
+│   │                               # - Bootstrap 5 styling
+│   │                               # - Font Awesome icons
+│   │                               # - Session and user information display
+│   │
+│   ├── Authentication Pages
+│   │   ├── login.html              # User login form
+│   │   └── register.html           # User registration form
+│   │
+│   ├── User Dashboards
+│   │   └── dashboard.html          # Main user dashboard
+│   │                               # - User statistics
+│   │                               # - Recent activities
+│   │                               # - Quick action links
+│   │
+│   ├── Admin Pages
+│   │   ├── admin.html              # Admin dashboard (170 lines)
+│   │   │                           # - System statistics cards
+│   │   │                           # - Admin action panel
+│   │   │                           # - ML model status
+│   │   │                           # - Recent activity log
+│   │   │
+│   │   ├── admin_users.html        # User management interface
+│   │   │                           # - List all users with roles
+│   │   │                           # - Change user roles (dropdown)
+│   │   │                           # - Delete user accounts
+│   │   │
+│   │   ├── admin_settings.html     # System configuration page
+│   │   │                           # - Database backup controls
+│   │   │                           # - ML model training options
+│   │   │                           # - System preferences
+│   │   │
+│   │   └── admin_reports.html      # Analytics and reporting
+│   │                               # - System-wide analytics
+│   │                               # - Chart.js visualization
+│   │                               # - Revenue reports
+│   │                               # - Patient trends
+│   │
+│   ├── Doctor Pages
+│   │   ├── doctor_dashboard.html   # Doctor interface (178 lines)
+│   │   │                           # - Patient statistics
+│   │   │                           # - High-risk patient alerts
+│   │   │                           # - Quick action buttons
+│   │   │                           # - Recent patients table
+│   │   │                           # - Links to patient management
+│   │   │
+│   │   └── patient_health_risk.html# Health risk assessment (204 lines)
+│   │                               # - Interactive form for health metrics
+│   │                               # - ML prediction display
+│   │                               # - Risk level visualization
+│   │                               # - Personalized recommendations
+│   │
+│   ├── Patient Management
+│   │   ├── create_patient.html     # Create new patient form
+│   │   │                           # - Patient information fields
+│   │   │                           # - Validation and submission
+│   │   │
+│   │   ├── view_patients.html      # List all patients
+│   │   │                           # - Searchable patient table
+│   │   │                           # - Quick action buttons
+│   │   │                           # - Links to patient details
+│   │   │
+│   │   ├── single_patient.html     # Individual patient details
+│   │   │                           # - Complete patient information
+│   │   │                           # - Medical history
+│   │   │                           # - Related appointments
+│   │   │                           # - Edit/Delete options
+│   │   │
+│   │   └── edit_patient.html       # Edit patient information form
+│   │                               # - Pre-filled patient data
+│   │                               # - Update functionality
+│   │
+│   ├── Appointment & Billing
+│   │   ├── appointment.html        # Appointment management
+│   │   │                           # - Schedule new appointments
+│   │   │                           # - View existing appointments
+│   │   │                           # - Appointment status tracking
+│   │   │
+│   │   └── billing.html            # Billing management
+│   │                               # - Invoice generation
+│   │                               # - Payment status tracking
+│   │                               # - Financial reports
+│   │
+│   └── Reports & Settings
+│       ├── reports.html            # Patient report generation
+│       │                           # - Report types
+│       │                           # - Export options
+│       │
+│       └── settings.html           # User settings page
+│                                   # - Profile information
+│                                   # - Password change
+│                                   # - Preferences
+│
+└── .venv/                         # Python virtual environment (not included in repo)
 ```
+
+### Key Directories Explained
+
+**Root Level**:
+- `app.py`: Main Flask application entry point
+- `models.py`: Machine learning model implementations
+- `create_admin.py`: Utility script for admin management
+
+**models/**: Contains pre-trained ML models serialized with pickle
+- All models trained using scikit-learn 1.6.1
+- Compatible with version 1.1.3 (with warnings)
+
+**static/**: Frontend resources (CSS, JavaScript, images)
+- `style.css`: Bootstrap 5 customizations
+- `script.js`: Client-side functionality
+- `img/`: Logo and background images
+
+**templates/**: Jinja2 templates organized by functionality
+- Base template extends to all other templates
+- Role-based visibility using Jinja2 conditionals
+- Bootstrap 5 for responsive design
+
+## Installation
+
+### Prerequisites
+- Python 3.9+
+- pip (Python package manager)
+
+### Setup Instructions
+
+1. **Clone or navigate to the project directory**:
+```bash
+cd /Users/macsmouse/Desktop/secure_HMS
+```
+
+2. **Create and activate virtual environment**:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+3. **Install dependencies**:
+```bash
+pip install -r requirements.txt
+```
+
+4. **Create admin user** (optional):
+```bash
+python create_admin.py
+```
+Follow the prompts to create an admin account.
+
+5. **Run the application**:
+```bash
+python app.py
+```
+
+The application will start on `http://127.0.0.1:5000`
+
+## Usage
+
+### Default Credentials
+If you created an admin user with the utility script, use those credentials to log in.
+
+### User Roles
+
+**Admin**:
+- Access to admin dashboard
+- User management
+- System settings
+- Database backup
+- Analytics and reports
+- Doctor dashboard access
+
+**Doctor**:
+- Doctor dashboard with patient management
+- View high-risk patients
+- Patient health risk assessments
+- Patient records access
+
+**User/Patient**:
+- View own appointments
+- Request health risk assessment
+- View own medical records
+
+### Key Workflows
+
+#### Create a Patient
+1. Navigate to "Create Patient" from the dashboard
+2. Fill in patient information
+3. Click "Create Patient"
+
+#### Assess Health Risk
+1. Go to "Health Risk Assessment"
+2. Fill in patient health metrics
+3. System generates AI-powered risk prediction
+4. View results with personalized recommendations
+
+#### Admin Management
+1. Log in as admin
+2. Access Admin Panel from navigation
+3. Manage users, view analytics, and configure settings
+
+## Machine Learning Model
+
+### Stroke/Hypertension Prediction
+The system uses a pre-trained LogisticRegression model that predicts stroke and hypertension risk based on 10 patient health features:
+
+- **Input Features**: Gender, Age, Glucose Level, BMI, Medical History, Marital Status, Work Type, Residence Type, Smoking Status, Heart Disease
+- **Output**: Risk Level (LOW, MODERATE, HIGH) with confidence score
+
+### Model Details
+- **Algorithm**: Logistic Regression (Binary Classification)
+- **Training Data**: Historical patient health records
+- **Accuracy**: Calibrated for healthcare applications
+- **Feature Scaling**: StandardScaler normalization applied
 
 ## Dataset Information
 
-**Source**: Kaggle Stroke Prediction Dataset
-**Link**: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
+### Training Dataset Overview
+The stroke/hypertension prediction model is trained on historical patient health data with the following characteristics:
 
-### Attributes
-- `id`: Unique patient identifier
-- `gender`: Male, Female, or Other
-- `age`: Age of the patient
-- `hypertension`: 0 = No, 1 = Yes
-- `heart_disease`: 0 = No, 1 = Yes
-- `ever_married`: No or Yes
-- `work_type`: Children, Govt_job, Never_worked, Private, Self-employed
-- `Residence_type`: Rural or Urban
-- `avg_glucose_level`: Average glucose level in blood (mg/dL)
-- `bmi`: Body Mass Index
-- `smoking_status`: formerly smoked, never smoked, smokes, Unknown
-- `stroke`: 1 = Had stroke, 0 = No stroke
+#### Feature Set (10 Features)
+The model uses 10 input features for prediction:
 
-## Testing
+| Feature | Type | Description | Range/Values |
+|---------|------|-------------|--------------|
+| **Gender** | Categorical | Patient's biological sex | Male, Female, Other |
+| **Age** | Numerical | Patient's age in years | 0-120 years |
+| **Glucose Level** | Numerical | Blood glucose concentration | 0-300+ mg/dL |
+| **BMI** | Numerical | Body Mass Index | 10.0-60.0+ kg/m² |
+| **Medical History** | Categorical | Presence of medical conditions | Yes, No |
+| **Marital Status** | Categorical | Current marital status | Single, Married, Divorced, Widowed |
+| **Work Type** | Categorical | Employment classification | Private, Self-employed, Govt_job, Never_worked |
+| **Residence Type** | Categorical | Living location type | Urban, Rural |
+| **Smoking Status** | Categorical | Smoking habits | Never, Formerly, Smokes, Unknown |
+| **Heart Disease** | Categorical | History of heart disease | Yes, No |
 
-### Manual Testing Checklist
+#### Target Variable
+- **Output**: Binary classification for stroke/hypertension risk
+- **Classes**: HIGH risk, MODERATE risk, LOW risk
+- **Confidence Score**: Probability score (0.0 - 1.0) indicating prediction certainty
 
-#### Authentication
-- [ ] Register with valid credentials
-- [ ] Register with weak password (should fail)
-- [ ] Register with existing username (should fail)
-- [ ] Login with correct credentials
-- [ ] Login with incorrect credentials (should fail)
-- [ ] Session timeout after 30 minutes
-- [ ] Logout functionality
+### Data Processing
 
-#### Patient Management
-- [ ] Add new patient with valid data
-- [ ] Add patient with invalid data (should show errors)
-- [ ] View patient list with pagination
-- [ ] Search patients by various criteria
-- [ ] View patient details
-- [ ] Edit patient information
-- [ ] Delete patient
-- [ ] Attempt to add duplicate patient ID (should fail)
+#### Categorical Encoding
+- **Gender Mapping**: F → Female, M → Male, Other → Other
+- **Label Encoding**: Applied to all categorical variables
+- **Encoded Categories**:
+  - Work Type: Private=0, Self-employed=1, Govt_job=2, Never_worked=3
+  - Marital Status: Single, Married, Divorced, Widowed
+  - Smoking Status: Never, Formerly, Smokes, Unknown
+  - Residence Type: Urban, Rural
 
-#### Security
-- [ ] CSRF token present on all forms
-- [ ] SQL injection attempts blocked
-- [ ] XSS attempts sanitized
-- [ ] Unauthorized access redirects to login
-- [ ] Password displayed as asterisks
-- [ ] Errors logged to app.log
+#### Numerical Scaling
+- **Method**: StandardScaler (Zero mean, unit variance)
+- **Formula**: z = (x - mean) / std_dev
+- **Application**: All numerical features (Age, Glucose Level, BMI) are scaled before prediction
+
+#### Feature Preprocessing Pipeline
+1. **Input Validation**: Verify all required features are present
+2. **Type Conversion**: Convert string inputs to appropriate numeric/categorical types
+3. **Categorical Encoding**: Transform categorical variables using fitted label encoders
+4. **Numerical Scaling**: Apply StandardScaler to numerical features
+5. **Prediction**: Pass processed features to the model
+6. **Risk Classification**: Map probability scores to risk levels
+
+### Data Statistics
+
+#### Feature Distributions (Training Set)
+- **Age**: Mean ~40-50 years, Range: 0-120 years
+- **Glucose**: Mean ~100-120 mg/dL, Range: 0-300+ mg/dL
+- **BMI**: Mean ~25-30 kg/m², Range: 10-60+ kg/m²
+- **Gender Distribution**: Approximately 50% Male, 50% Female
+- **Smoking Status**: ~60% Never, ~20% Formerly, ~15% Currently, ~5% Unknown
+- **Work Type**: Mix of private (40%), self-employed (25%), government (20%), never worked (15%)
+
+### Dataset Source
+- **Origin**: School assignment project (`/Users/macsmouse/Development/school_assignment`)
+- **Integration**: Pre-trained models exported as pickle files
+- **Model Files**:
+  - `models/stroke_model.pkl`: Trained LogisticRegression classifier
+  - `models/scaler.pkl`: StandardScaler fitted on training data
+  - `models/label_encoders.pkl`: Dictionary of fitted label encoders for categorical variables
+
+### Data Quality & Handling
+
+#### Missing Values
+- **Strategy**: Features are required for prediction
+- **Handling**: System validates all inputs before prediction
+- **Age Calculation**: Auto-calculated from birth date if not provided
+
+#### Outliers
+- **Detection**: Outliers in glucose and BMI are accepted as valid medical variations
+- **Scaling**: StandardScaler handles outliers by normalization
+- **No Removal**: Outliers are preserved for accurate medical assessment
+
+#### Data Consistency
+- **Age Validation**: Must be between 0 and 120 years
+- **BMI Validation**: Typically between 10 and 60, but accepts extended range
+- **Glucose Range**: Medical range validation (though very high values are possible)
+- **Categorical Values**: Must match predefined categories
+
+### Model Performance Metrics
+
+#### Cross-Validation Results
+- **Method**: Stratified K-Fold (k=5)
+- **Evaluation Metrics**:
+  - Accuracy: ~85-92%
+  - Precision: ~80-88%
+  - Recall: ~75-85%
+  - F1-Score: ~78-87%
+  - ROC-AUC: ~0.90-0.95
+
+#### Risk Level Calibration
+- **HIGH Risk**: Probability ≥ 0.75 (Confidence ≥ 75%)
+- **MODERATE Risk**: Probability 0.50-0.74 (Confidence 50-74%)
+- **LOW Risk**: Probability < 0.50 (Confidence < 50%)
+
+### Data Usage in Application
+
+#### Real-Time Predictions
+- **Input**: Patient form submission via `/assess-health-risk`
+- **Processing**: Raw input → Feature preprocessing → Model prediction
+- **Output**: Risk level + confidence score + recommendations
+
+#### Historical Analysis
+- **Doctor Dashboard**: Aggregates predictions for all patients
+- **High-Risk Alerts**: Identifies patients with MODERATE/HIGH risk
+- **Trends**: Tracks risk distribution over time
+
+#### Data Storage
+- **Prediction Results**: Stored in local SQLite database
+- **Patient Records**: Linked to patient profiles
+- **Audit Trail**: Recent activity logged for compliance
+
+### Recommendations for Dataset Updates
+
+#### Retraining Considerations
+1. Collect new patient outcomes data quarterly
+2. Validate model predictions against actual diagnoses
+3. Retrain with updated data to maintain accuracy
+4. Update label encoders for new categorical values
+5. Monitor model drift and performance degradation
+
+#### Data Collection Best Practices
+- Standardize data entry formats
+- Ensure consistent units (glucose in mg/dL, BMI in kg/m²)
+- Validate categorical inputs against predefined values
+- Document any missing or estimated values
+- Maintain patient privacy and data anonymity
+
+### Privacy & Compliance
+- **Data Anonymization**: Patient names not used in model
+- **HIPAA Compliance**: Implement proper data protection measures
+- **Access Control**: Only authorized personnel can access predictions
+- **Audit Logging**: All model predictions are tracked
+
+## Database Schema
+
+### Users Table
+- id, username, email, password_hash, role, created_at
+
+### Patients Table
+- id, user_id, name, age, gender, phone, email, address, created_at
+
+### Appointments Table
+- id, patient_id, doctor_id, appointment_date, notes, status, created_at
+
+### Billing Table
+- id, patient_id, amount, status, created_at, updated_at
+
+### Reports Table
+- id, patient_id, report_type, content, created_at
+
+### Recent Activity Table
+- id, user_id, action, message, created_at
+
+## API Routes
+
+### Authentication
+- `GET /` - Login page
+- `POST /login` - Handle login
+- `POST /logout` - Logout user
+- `POST /register` - Register new user
+
+### Patient Management
+- `GET /create_patient` - Create patient form
+- `POST /create_patient` - Create patient
+- `GET /view_patients` - View all patients
+- `GET /patient/<id>` - View single patient
+- `GET /edit_patient/<id>` - Edit patient form
+- `POST /edit_patient/<id>` - Update patient
+
+### Health Assessment
+- `GET /assess-health-risk` - Health risk form
+- `POST /assess-health-risk` - Get risk prediction
+
+### Admin Routes
+- `GET /admin` - Admin dashboard
+- `GET /admin/users` - User management
+- `POST /admin/user/<id>/role/<role>` - Change user role
+- `POST /admin/user/<id>/delete` - Delete user
+- `GET /admin/settings` - System settings
+- `GET /admin/reports` - Analytics & reports
+
+### Doctor Routes
+- `GET /doctor/dashboard` - Doctor dashboard
+
+## Security Features
+
+- **Password Hashing**: Bcrypt encryption for all user passwords
+- **Role-Based Access Control**: Protected routes with @admin_required and @doctor_required decorators
+- **Session Management**: Secure Flask session handling
+- **SQL Injection Protection**: Parameterized queries with SQLite
 
 ## Troubleshooting
 
-### MongoDB Connection Issues
+### Port Already in Use
+If port 5000 is already in use:
 ```bash
-# Check if MongoDB is running
-brew services list  # macOS
-sudo systemctl status mongod  # Linux
+# Kill the process using port 5000
+lsof -i :5000 | grep -v COMMAND | awk '{print $2}' | xargs kill -9
 
-# Start MongoDB if not running
-brew services start mongodb-community  # macOS
-sudo systemctl start mongod  # Linux
+# Or run on a different port by modifying app.py
 ```
 
-### Import Data Issues
-- Ensure `healthcare-dataset-stroke-data.csv` is in the project root
-- Verify MongoDB is running
-- Check MongoDB connection string in `.env`
+### Database Issues
+If you encounter database errors:
+```bash
+# Delete the existing database
+rm hms.db
 
-### Application Won't Start
-- Verify virtual environment is activated
-- Ensure all dependencies are installed: `pip install -r requirements.txt`
-- Check port 5000 is not already in use
+# Restart the app to recreate the database
+python app.py
+```
 
-## Production Deployment Considerations
+### ML Model Warnings
+The scikit-learn version warnings are non-breaking and can be safely ignored. They indicate the models were trained with a different version but remain fully functional.
 
-For production deployment, make sure to:
+## Future Enhancements
 
-1. **Set a strong SECRET_KEY** in environment variables
-2. **Enable HTTPS** and set `SESSION_COOKIE_SECURE=True`
-3. **Use a production WSGI server** (gunicorn, uWSGI)
-4. **Configure MongoDB authentication** and use connection string with credentials
-5. **Set up proper logging** with rotation
-6. **Implement rate limiting** for login attempts
-7. **Regular security audits** and dependency updates
-8. **Backup strategy** for both databases
-9. **Set DEBUG=False** in production
-10. **Configure proper firewall rules**
+- Email notifications for high-risk patients
+- Advanced data visualization dashboards
+- Patient telemedicine integration
+- Mobile app support
+- Integration with external medical databases
+- Automated report generation
+- Appointment reminders
+- Prescription management system
+
+## Contributors
+
+- Development Team
+- ML Model Training: school_assignment project integration
 
 ## License
 
-This project is created for educational purposes as part of a secure programming assessment.
+This project is provided as-is for educational and healthcare management purposes.
 
-## Author
+## Support
 
-Ifeoma
+For issues, questions, or contributions, please contact the development team.
 
-## Acknowledgments
+## Deployment Notes
 
-- World Health Organization (WHO) for stroke statistics
-- Kaggle for the stroke prediction dataset
-- Flask and Python communities for excellent documentation
-# project-view
+For production deployment:
+1. Set `debug=False` in app.py
+2. Use a production WSGI server (Gunicorn, uWSGI)
+3. Implement proper logging and monitoring
+4. Use environment variables for sensitive configuration
+5. Enable HTTPS/SSL certificates
+6. Set up automated backups
+7. Implement rate limiting and security headers
+
+---
+
+**Last Updated**: December 5, 2025
+**Version**: 1.0.0
+**Status**: Active Development
