@@ -10,6 +10,7 @@ This application demonstrates secure software development practices including:
 - Proper error logging
 """
 
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_wtf.csrf import CSRFProtect
