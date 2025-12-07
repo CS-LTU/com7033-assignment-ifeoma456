@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Billing{% endblock %}
+
+{% block content %}
+
+<style>
+    /* for font-styling */
+    body, p, h1, h2, h3, h4, h5, h6, label, input, select, textarea, button, table, td, th, a, span {
+    font-family: 'Roboto', sans-serif !important;
+    font-size:10px
+}
+
+
+    :root {
+        --primary-color: #55B4AF;
+        --primary-light: #73c7c3;
+        --primary-dark: #3e8e8a;
+    }
+
+    .billing-title {
+        font-size: 1.9rem;
+        font-weight: 700;
+        color: #333;
+        animation: fadeDown .6s ease;
+    }
+
+    .billing-subtitle {
+        color: #6c757d;
+        animation: fadeDown .8s ease;
+    }
+
+    @keyframes fadeDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .billing-card, .billing-table-card {
+        background: #fff;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        animation: fadeUp .6s ease;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-control, .form-select {
+        padding: 14px;
+        border-radius: 10px;
+        transition: .3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 .18rem rgba(85,180,175,0.3);
+        transform: scale(1.02);
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        border: none;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: .3s;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .paid { background: #198754; }
+    .unpaid { background: #dc3545; }
+    .cancelled { background: #6c757d; }
+
+    .table thead {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .action-btn {
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: .8rem;
+        font-weight: 600;
+        color: white;
+        text-decoration: none;
+        margin-right: 4px;
+        display: inline-block;
+    }
+
+    .btn-paid { background: #198754; }
+    .btn-unpaid { background: #dc3545; }
+    .btn-cancelled { background: #6c757d; }
+    .btn-delete { background: #b11a1a; }
+
+    .action-btn:hover {
+        opacity: .85;
+    }
+
+    /* Responsive table for mobile */
+    @media (max-width: 768px) {
+        table thead { display: none; }
+
+        table tr {
+            margin-bottom: 15px;
+            display: block;
+            border-radius: 10px;
+            padding: 15px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        table td {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        table td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #333;
+        }
+    }
+</style>
+
+
+<div class="container-fluid py-4">
+
+    <h1 class="billing-title">Billing</h1>
+    <p class="billing-subtitle">Manage patient billing records</p>
+
+    <div class="row mt-4">
+
+        <!-- ============================
+             BILLING FORM
+        ============================ -->
+        <div class="col-lg-4 mb-4">
+            <div class="billing-card">
+
+                <h5 class="mb-3">
+                    <i class="fas fa-file-invoice-dollar me-2" style="color: var(--primary-color);"></i>
+                    New Bill
+                </h5>
+
+                <form method="POST" action="{{ url_for('billing') }}">
+
+                    <!-- Patient -->
+                    <div class="mb-3">
+                        <label class="form-label">Select Patient *</label>
+                        <select name="patient_id" class="form-select" required>
+                            <option value="">-- Choose Patient --</option>
+                            {% for p in patients %}
+                            <option value="{{ p.id }}">
+                                {{ p.first_name }} {{ p.last_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Amount -->
+                    <div class="mb-3">
+                        <label class="form-label">Amount ($)*</label>
+                        <input type="number" name="amount" step="0.01" class="form-control" required>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label">Description *</label>
+                        <textarea name="description" class="form-control" rows="3" required></textarea>
+                    </div>
+
+                    <button class="btn btn-primary w-100 mt-2">
+                        <i class="fas fa-plus-circle me-1"></i>
+                        Add Billing Record
+                    </button>
+
+                </form>
+            </div>
+        </div>
+
+
+        <!-- ============================
+             BILLING TABLE
+        ============================ -->
+        <div class="col-lg-8 mb-4">
+            <div class="billing-table-card">
+
+                <h5 class="mb-3">
+                    <i class="fas fa-list me-2" style="color: var(--primary-color);"></i>
+                    Billing Records
+                </h5>
+
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for b in bills %}
+                            <tr>
+                                <td data-label="Patient">
+                                    {{ b.first_name }} {{ b.last_name }}
+                                </td>
+
+                                <td data-label="Amount">
+                                    ${{ "%.2f"|format(b.amount) }}
+                                </td>
+
+                                <td data-label="Description">
+                                    {{ b.description }}
+                                </td>
+
+                                <td data-label="Status">
+                                    {% if b.status == "Paid" %}
+                                        <span class="status-badge paid">Paid</span>
+                                    {% elif b.status == "Unpaid" %}
+                                        <span class="status-badge unpaid">Unpaid</span>
+                                    {% else %}
+                                        <span class="status-badge cancelled">Cancelled</span>
+                                    {% endif %}
+                                </td>
+
+                                <td data-label="Date">
+                                    {{ b.created_at }}
+                                </td>
+
+                                <td data-label="Actions" class="text-end">
+
+                                    <!-- Status Buttons -->
+                                    <a href="{{ url_for('update_bill_status', id=b.id, new_status='Paid') }}"
+                                       class="action-btn btn-paid">Paid</a>
+
+                                    <a href="{{ url_for('update_bill_status', id=b.id, new_status='Unpaid') }}"
+                                       class="action-btn btn-unpaid">Unpaid</a>
+
+                                    <a href="{{ url_for('update_bill_status', id=b.id, new_status='Cancelled') }}"
+                                       class="action-btn btn-cancelled">Cancel</a>
+
+                                    <!-- Delete -->
+                                    <a href="{{ url_for('delete_bill', id=b.id) }}"
+                                       class="action-btn btn-delete"
+                                       onclick="return confirm('Delete this billing record?');">
+                                       Delete
+                                    </a>
+
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-3 text-muted">
+                                    No billing records found.
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

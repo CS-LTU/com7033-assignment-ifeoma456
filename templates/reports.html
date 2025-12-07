@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+
+<!-- GOOGLE FONTS -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<!-- DATATABLES -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap5.min.css">
+
+<style>
+    :root {
+        --primary-color: #55B4AF;
+        --primary-light: #71ccc7;
+        --primary-dark: #3d8d89;
+    }
+
+    body {
+        font-family: 'Roboto', sans-serif !important;
+    }
+
+    /* PAGE TITLE */
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        animation: fadeDown .6s ease;
+        color: #333;
+    }
+
+    .page-subtitle {
+        color: #6c757d;
+        font-weight: 400;
+        animation: fadeDown .8s ease;
+    }
+
+    @keyframes fadeDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* FILTER CARD */
+    .filter-card {
+        background: #fff;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        animation: fadeUp .6s ease;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-select, .form-control {
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    .form-select:focus, .form-control:focus {
+        box-shadow: 0 0 0 .15rem rgba(85,180,175,0.4);
+        border-color: var(--primary-color);
+        transform: scale(1.02);
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        border: none;
+        padding: 12px 20px;
+        border-radius: 10px;
+        transition: .3s;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    /* TABLE CARD */
+    .report-card {
+        background: #fff;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        animation: fadeUp .7s ease;
+    }
+
+    .table th {
+        background: var(--primary-color);
+        color: #fff;
+    }
+
+    /* CHART CONTAINER */
+    .chart-box {
+        background: #fff;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        animation: fadeUp .8s ease;
+    }
+</style>
+
+<div class="container-fluid py-4">
+
+    <h1 class="page-title">Reports</h1>
+    <p class="page-subtitle">Generate and export reports</p>
+
+    <!-- ============================
+         FILTERS
+    ============================ -->
+    <div class="filter-card mb-4">
+        <form method="POST" action="{{ url_for('reports') }}">
+
+            <div class="row g-3">
+
+                <!-- Report Type -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Report Type *</label>
+                    <select name="report_type" class="form-select" required>
+                        <option value="">-- Select Report Type --</option>
+                        <option value="appointments">Appointments Report</option>
+                        <option value="patients">Patient Report</option>
+                        <option value="billing">Billing Report</option>
+                    </select>
+                </div>
+
+                <!-- Patient (Optional) -->
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Filter by Patient (Optional)</label>
+                    <select name="patient_id" class="form-select">
+                        <option value="">-- All Patients --</option>
+                        {% for p in patients %}
+                        <option value="{{ p.id }}">{{ p.first_name }} {{ p.last_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Date Range -->
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Start Date</label>
+                    <input type="date" class="form-control" name="start_date">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">End Date</label>
+                    <input type="date" class="form-control" name="end_date">
+                </div>
+
+            </div>
+
+            <div class="text-end mt-3">
+                <button class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i> Generate Report
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ============================
+         REPORT TABLE
+    ============================ -->
+    <div class="report-card mb-4">
+
+        <h5 class="mb-3">
+            <i class="fas fa-table me-2" style="color: var(--primary-color);"></i>
+            Report Results
+        </h5>
+
+        <table id="reportTable" class="table table-hover table-bordered">
+            <thead>
+                <tr>
+                    {% for col in columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    {% for col in columns %}
+                    <td>{{ row[col] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+
+    <!-- ============================
+         CHARTS SECTION
+    ============================ -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="chart-box">
+                <h6 class="mb-3 fw-bold">Appointments Trend</h6>
+                <canvas id="appointmentChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="chart-box">
+                <h6 class="mb-3 fw-bold">Billing Summary</h6>
+                <canvas id="billingChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ============================
+     JAVASCRIPT
+============================ -->
+
+<!-- DATATABLES -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- EXPORT BUTTONS -->
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+
+<!-- CHART JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#reportTable').DataTable({
+        dom: 'Bfrtip',
+        buttons: [
+            { 
+                extend: 'excel', 
+                className: 'btn',
+                text: 'Excel',
+                titleAttr: 'Export to Excel',
+                style: '' 
+            },
+            { 
+                extend: 'csv', 
+                className: 'btn',
+                text: 'CSV',
+                titleAttr: 'Export to CSV',
+                attr:  { style: 'background-color:#055A70; color:white;' }
+            },
+            { 
+                extend: 'pdf', 
+                className: 'btn',
+                text: 'PDF',
+                titleAttr: 'Export to PDF',
+                attr: { style: 'background-color:#044958; color:white;' }
+            },
+            { 
+                extend: 'print', 
+                className: 'btn',
+                text: 'Print',
+                titleAttr: 'Print Table',
+                attr: { style: 'background-color:#1A7F97; color:white;' }
+            }
+        ]
+    });
+});
+
+
+
+// ==========================
+// CHART 1 — Appointments Trend
+// ==========================
+new Chart(document.getElementById('appointmentChart'), {
+    type: 'line',
+    data: {
+        labels: {{ chart_dates | tojson }},
+        datasets: [{
+            label: 'Appointments',
+            data: {{ chart_appts | tojson }},
+            borderColor: '#55B4AF',
+            backgroundColor: 'rgba(85,180,175,0.3)',
+            tension: .4,
+            borderWidth: 2
+        }]
+    }
+});
+
+// ==========================
+// CHART 2 — Billing Summary
+// ==========================
+new Chart(document.getElementById('billingChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Paid', 'Unpaid', 'Cancelled'],
+        datasets: [{
+            data: {{ billing_summary | tojson }},
+            backgroundColor: ['#B1DCDA', '#FF8A20', '#6c757d']
+        }]
+    }
+});
+</script>
+
+{% endblock %}

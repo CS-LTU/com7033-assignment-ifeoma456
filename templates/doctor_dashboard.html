@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0"><i class="fas fa-stethoscope me-2"></i>Doctor Dashboard</h1>
+            <p class="text-muted">Patient management and health insights</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-left-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Patients</h6>
+                            <h3 class="mb-0">{{ stats.total_patients }}</h3>
+                        </div>
+                        <i class="fas fa-users fa-2x text-primary opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-left-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Active Appointments</h6>
+                            <h3 class="mb-0">{{ stats.active_appointments }}</h3>
+                        </div>
+                        <i class="fas fa-calendar-check fa-2x text-success opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-left-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">New Today</h6>
+                            <h3 class="mb-0">{{ stats.recent_patients }}</h3>
+                        </div>
+                        <i class="fas fa-user-plus fa-2x text-warning opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-left-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Pending Bills</h6>
+                            <h3 class="mb-0">${{ "%.2f"|format(stats.pending_bills) }}</h3>
+                        </div>
+                        <i class="fas fa-dollar-sign fa-2x text-danger opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-cog me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('view_patients') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-users me-2"></i> View All Patients
+                        </a>
+                        <a href="{{ url_for('create_patient') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-plus me-2"></i> Add New Patient
+                        </a>
+                        <a href="{{ url_for('appointments_list') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar me-2"></i> View Appointments
+                        </a>
+                        <a href="{{ url_for('assess_health_risk') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-heartbeat me-2"></i> Health Risk Assessment
+                        </a>
+                        <a href="{{ url_for('billing') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-receipt me-2"></i> Billing Management
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-heartbeat me-2"></i>High Risk Patients</h5>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if high_risk_patients %}
+                        <div class="list-group list-group-flush">
+                            {% for item in high_risk_patients[:5] %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-0">{{ item.patient.first_name }} {{ item.patient.last_name }}</h6>
+                                        <small class="text-muted">ID: {{ item.patient.patient_id }}</small>
+                                    </div>
+                                    <span class="badge bg-danger">{{ item.prediction.risk_level }}</span>
+                                </div>
+                                <small class="text-muted d-block mt-1">
+                                    Risk Score: {{ "%.1f"|format(item.prediction.risk_score) }}%
+                                </small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center mb-0">No high-risk patients identified</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Overview -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Recent Patients</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Name</th>
+                                    <th>DOB</th>
+                                    <th>Gender</th>
+                                    <th>Contact</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for patient in recent_patients %}
+                                <tr>
+                                    <td><strong>{{ patient.patient_id }}</strong></td>
+                                    <td>{{ patient.first_name }} {{ patient.last_name }}</td>
+                                    <td>{{ patient.date_of_birth }}</td>
+                                    <td>
+                                        {% if patient.gender == 'M' %}
+                                        <span class="badge bg-info">Male</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Female</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ patient.phone or 'N/A' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('view_patient', id=patient.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No patients found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .border-left-primary { border-left: 4px solid #007bff !important; }
+    .border-left-success { border-left: 4px solid #28a745 !important; }
+    .border-left-warning { border-left: 4px solid #ffc107 !important; }
+    .border-left-danger { border-left: 4px solid #dc3545 !important; }
+</style>
+{% endblock %}

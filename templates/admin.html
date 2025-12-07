@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0"><i class="fas fa-crown me-2"></i>Admin Dashboard</h1>
+            <p class="text-muted">System overview and management</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-left-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Users</h6>
+                            <h3 class="mb-0">{{ total_users }}</h3>
+                        </div>
+                        <i class="fas fa-users fa-2x text-primary opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-left-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Patients</h6>
+                            <h3 class="mb-0">{{ total_patients }}</h3>
+                        </div>
+                        <i class="fas fa-procedures fa-2x text-success opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-left-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Revenue</h6>
+                            <h3 class="mb-0">${{ "%.2f"|format(total_revenue) }}</h3>
+                        </div>
+                        <i class="fas fa-dollar-sign fa-2x text-warning opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm border-left-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Appointments</h6>
+                            <h3 class="mb-0">{{ total_appointments }}</h3>
+                        </div>
+                        <i class="fas fa-calendar-check fa-2x text-danger opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Actions & ML Model Status -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-tools me-2"></i>Admin Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('admin_users') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-cog me-2"></i> Manage Users
+                        </a>
+                        <a href="{{ url_for('admin_settings') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-sliders-h me-2"></i> System Settings
+                        </a>
+                        <a href="{{ url_for('admin_reports') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chart-line me-2"></i> System Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-brain me-2"></i>ML Model Status</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Model Status:</strong></td>
+                            <td><span class="badge bg-success">{{ model_stats.model_status }}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Model Type:</strong></td>
+                            <td>{{ model_stats.model_type }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Last Updated:</strong></td>
+                            <td>{{ model_stats.last_trained }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Features:</strong></td>
+                            <td>{{ model_stats.features }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Activity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in recent_activities %}
+                                <tr>
+                                    <td>{{ activity.message if activity.message else activity[0] if activity else 'Activity' }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td class="text-center text-muted">No recent activity</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .border-left-primary { border-left: 4px solid #007bff !important; }
+    .border-left-success { border-left: 4px solid #28a745 !important; }
+    .border-left-warning { border-left: 4px solid #ffc107 !important; }
+    .border-left-danger { border-left: 4px solid #dc3545 !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+
+{% block title %}Health Risk Assessment{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0"><i class="fas fa-heartbeat me-2"></i>Stroke/Hypertension Risk Assessment</h1>
+            <p class="text-muted">AI-Powered Health Risk Prediction</p>
+        </div>
+    </div>
+
+    <!-- Assessment Form -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-clipboard-list me-2"></i>Patient Health Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('assess_health_risk') }}" id="assessmentForm">
+                        <!-- Hidden patient_id field for tracking -->
+                        {% if patient_id %}
+                        <input type="hidden" name="patient_id" value="{{ patient_id }}">
+                        {% endif %}
+                        
+                        <!-- Patient Selection for Database Integration -->
+                        <div class="mb-4 p-3 bg-light border rounded">
+                            <h6 class="mb-3"><i class="fas fa-user me-2"></i><strong>Patient Selection (Optional)</strong></h6>
+                            <p class="text-muted small">Select a patient to use their medical history and previous assessments for enhanced prediction accuracy.</p>
+                            <select name="patient_id" id="patientSelect" class="form-select">
+                                <option value="">-- No Patient Selected (Anonymous Assessment) --</option>
+                                {% if patients %}
+                                    {% for patient in patients %}
+                                    <option value="{{ patient.id }}" {% if patient_id == patient.id %}selected{% endif %}>
+                                        {{ patient.first_name }} {{ patient.last_name }} (ID: {{ patient.id }})
+                                    </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        
+                        <!-- Basic Information -->
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Gender</strong></label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="gender" id="male" value="Male" required>
+                                    <label class="form-check-label" for="male">Male</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="gender" id="female" value="Female">
+                                    <label class="form-check-label" for="female">Female</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="gender" id="other" value="Other">
+                                    <label class="form-check-label" for="other">Other</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Age -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="age" class="form-label"><strong>Age (years)</strong></label>
+                                    <input type="number" class="form-control" id="age" name="age" min="1" max="120" required placeholder="Enter age">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="avgGlucose" class="form-label"><strong>Average Glucose Level (mg/dL)</strong></label>
+                                    <input type="number" class="form-control" id="avgGlucose" name="avg_glucose_level" min="50" max="400" required placeholder="Enter glucose level">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BMI and Health Conditions -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="bmi" class="form-label"><strong>BMI (Body Mass Index)</strong></label>
+                                    <input type="number" class="form-control" id="bmi" name="bmi" min="10" max="60" step="0.1" placeholder="Enter BMI">
+                                    <small class="text-muted">Leave blank to use average value</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Medical History</strong></label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="hypertension" id="hypertension" value="1">
+                                        <label class="form-check-label" for="hypertension">Hypertension History</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="heart_disease" id="heartDisease" value="1">
+                                        <label class="form-check-label" for="heartDisease">Heart Disease</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lifestyle -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="maritalStatus" class="form-label"><strong>Marital Status</strong></label>
+                                    <select class="form-select" id="maritalStatus" name="ever_married" required>
+                                        <option value="">Select...</option>
+                                        <option value="Yes">Married</option>
+                                        <option value="No">Single</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="workType" class="form-label"><strong>Work Type</strong></label>
+                                    <select class="form-select" id="workType" name="work_type" required>
+                                        <option value="">Select...</option>
+                                        <option value="Private">Private Sector</option>
+                                        <option value="Govt_job">Government Job</option>
+                                        <option value="Self-employed">Self-employed</option>
+                                        <option value="Never_worked">Never worked</option>
+                                        <option value="children">Child</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Residence and Smoking -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="residenceType" class="form-label"><strong>Residence Type</strong></label>
+                                    <select class="form-select" id="residenceType" name="Residence_type" required>
+                                        <option value="">Select...</option>
+                                        <option value="Urban">Urban</option>
+                                        <option value="Rural">Rural</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="smokingStatus" class="form-label"><strong>Smoking Status</strong></label>
+                                    <select class="form-select" id="smokingStatus" name="smoking_status" required>
+                                        <option value="">Select...</option>
+                                        <option value="never smoked">Never Smoked</option>
+                                        <option value="formerly smoked">Formerly Smoked</option>
+                                        <option value="smokes">Currently Smokes</option>
+                                        <option value="Unknown">Unknown</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="reset" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-redo me-1"></i> Reset
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check-circle me-1"></i> Assess Risk
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Panel -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-3">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>About This Assessment</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-2">
+                        This assessment uses an advanced machine learning model trained on healthcare data to predict the risk of stroke or hypertension.
+                    </p>
+                    <div class="alert alert-info mb-0">
+                        <strong>Note:</strong> This assessment is for informational purposes only and should not replace professional medical advice. Please consult with a healthcare provider for accurate diagnosis.
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-chart-pie me-2"></i>Risk Categories</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <span class="badge bg-danger">HIGH RISK (75-100%)</span>
+                        <p class="small text-muted mt-1">Immediate medical consultation recommended</p>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-warning">MODERATE RISK (50-74%)</span>
+                        <p class="small text-muted mt-1">Schedule appointment with doctor</p>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-info">LOW RISK (25-49%)</span>
+                        <p class="small text-muted mt-1">Monitor health regularly</p>
+                    </div>
+                    <div>
+                        <span class="badge bg-success">MINIMAL RISK (0-24%)</span>
+                        <p class="small text-muted mt-1">Maintain healthy lifestyle</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    {% if result %}
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow border-left-{{ result.risk_color }}">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-stethoscope me-2"></i>Assessment Results</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Risk Level Badge -->
+                    <div class="text-center mb-4">
+                        <span class="badge bg-{{ result.risk_color }} p-3" style="font-size: 1.2em;">
+                            {{ result.risk_level }}
+                        </span>
+                        <h4 class="mt-3">{{ result.prediction }}</h4>
+                    </div>
+
+                    <!-- Risk Score Progress Bar -->
+                    <div class="mb-4">
+                        <h6 class="mb-2">Risk Score: <strong>{{ "%.1f"|format(result.risk_score) }}%</strong></h6>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar bg-{{ result.risk_color }}" role="progressbar" 
+                                 style="width: {{ result.risk_score }}%;" 
+                                 aria-valuenow="{{ result.risk_score }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Results -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded mb-2">
+                                <h6 class="text-muted mb-1">Condition Probability</h6>
+                                <h4 class="mb-0">{{ "%.1f"|format(result.probability_has_condition) }}%</h4>
+                                <small class="text-muted">Has Stroke/Hypertension</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded mb-2">
+                                <h6 class="text-muted mb-1">Prediction Confidence</h6>
+                                <h4 class="mb-0">{{ "%.1f"|format(result.confidence) }}%</h4>
+                                <small class="text-muted">Model Confidence Level</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div class="mt-4">
+                        <h6 class="mb-3">Recommendations</h6>
+                        {% if result.risk_level == "HIGH RISK" %}
+                        <div class="alert alert-danger">
+                            <strong><i class="fas fa-exclamation-circle me-2"></i>Urgent Action Required</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Schedule immediate appointment with a healthcare provider</li>
+                                <li>Monitor blood pressure and glucose levels regularly</li>
+                                <li>Consider lifestyle changes: diet, exercise, stress management</li>
+                                <li>Take prescribed medications as recommended</li>
+                            </ul>
+                        </div>
+                        {% elif result.risk_level == "MODERATE RISK" %}
+                        <div class="alert alert-warning">
+                            <strong><i class="fas fa-exclamation-triangle me-2"></i>Recommended Actions</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Schedule appointment with your doctor soon</li>
+                                <li>Maintain regular health check-ups</li>
+                                <li>Adopt healthier lifestyle habits</li>
+                                <li>Track health metrics regularly</li>
+                            </ul>
+                        </div>
+                        {% elif result.risk_level == "LOW RISK" %}
+                        <div class="alert alert-info">
+                            <strong><i class="fas fa-info-circle me-2"></i>Health Maintenance</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Continue healthy lifestyle practices</li>
+                                <li>Maintain regular exercise routine</li>
+                                <li>Regular health check-ups annually</li>
+                                <li>Monitor family history of conditions</li>
+                            </ul>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-success">
+                            <strong><i class="fas fa-check-circle me-2"></i>Good Health Status</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Continue maintaining current healthy lifestyle</li>
+                                <li>Regular preventive health check-ups</li>
+                                <li>Stay physically active</li>
+                                <li>Maintain a balanced diet</li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{{ url_for('create_patient') }}" class="btn btn-primary me-md-2">
+                            <i class="fas fa-user-plus me-1"></i> Create Patient Record
+                        </a>
+                        <a href="{{ url_for('appointments') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-calendar me-1"></i> Book Appointment
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Details Sidebar -->
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-file-alt me-2"></i>Assessment Summary</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Assessment Date:</strong></td>
+                            <td>{{ now.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Model Version:</strong></td>
+                            <td>1.0 (Trained)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Assessment Type:</strong></td>
+                            <td>Stroke/Hypertension Risk</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Patient History & Trend Section (if patient_id is provided) -->
+    {% if patient_id and assessment_history %}
+    <div class="row mt-4">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-history me-2"></i>Risk Trend Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if risk_trend and risk_trend.trend != "No History" %}
+                    <div class="alert alert-{% if risk_trend.direction == 'up' %}danger{% elif risk_trend.direction == 'down' %}success{% else %}info{% endif %} mb-3">
+                        <strong>Trend: {{ risk_trend.trend }}</strong>
+                        {% if risk_trend.direction == 'up' %}
+                        <i class="fas fa-arrow-up text-danger ms-2"></i>
+                        {% elif risk_trend.direction == 'down' %}
+                        <i class="fas fa-arrow-down text-success ms-2"></i>
+                        {% else %}
+                        <i class="fas fa-minus text-info ms-2"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Previous Assessment</h6>
+                            <h4 class="text-primary">{{ risk_trend.previous_risk }}%</h4>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Latest Assessment</h6>
+                            <h4 class="text-danger">{{ risk_trend.latest_risk }}%</h4>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 p-2 bg-light rounded">
+                        <small><strong>Change: </strong>
+                            {% if risk_trend.change > 0 %}
+                            <span class="text-danger">+{{ risk_trend.change }}%</span>
+                            {% elif risk_trend.change < 0 %}
+                            <span class="text-success">{{ risk_trend.change }}%</span>
+                            {% else %}
+                            <span class="text-muted">No change</span>
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No previous assessments to compare</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-list me-2"></i>Assessment History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Risk Level</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assessment in assessment_history[:5] %}
+                                <tr>
+                                    <td>
+                                        <small>{{ assessment.created_at[:10] }}</small>
+                                    </td>
+                                    <td>
+                                        {% if assessment.risk_level == "HIGH RISK" %}
+                                        <span class="badge bg-danger">HIGH</span>
+                                        {% elif assessment.risk_level == "MODERATE RISK" %}
+                                        <span class="badge bg-warning">MOD</span>
+                                        {% elif assessment.risk_level == "LOW RISK" %}
+                                        <span class="badge bg-info">LOW</span>
+                                        {% else %}
+                                        <span class="badge bg-success">MIN</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ "%.1f"|format(assessment.risk_score) }}%</strong>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<style>
+    .border-left-danger { border-left: 4px solid #dc3545 !important; }
+    .border-left-warning { border-left: 4px solid #ffc107 !important; }
+    .border-left-info { border-left: 4px solid #17a2b8 !important; }
+    .border-left-success { border-left: 4px solid #28a745 !important; }
+</style>
+
+<script>
+    // Form validation
+    document.getElementById('assessmentForm').addEventListener('submit', function(e) {
+        // Validate required fields
+        const gender = document.querySelector('input[name="gender"]:checked');
+        const age = document.getElementById('age').value;
+        
+        if (!gender || !age) {
+            e.preventDefault();
+            alert('Please fill in all required fields');
+        }
+    });
+</script>
+{% endblock %}

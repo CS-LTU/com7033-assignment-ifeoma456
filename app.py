@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 import sqlite3
 import re
 import time
@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'
+app.config['SESSION_COOKIE_SECURE'] = False  # Set True only for HTTPS in production
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 bcrypt = Bcrypt(app)
 csrf = CSRFProtect(app)
 
@@ -31,7 +34,7 @@ login_manager.login_message = 'Please log in to access this page.'
 # Context processor to inject csrf_token into all templates
 @app.context_processor
 def inject_csrf_token():
-    return dict(csrf_token=lambda: csrf.generate_csrf() if hasattr(csrf, 'generate_csrf') else '')
+    return dict(csrf_token=generate_csrf)
 
 # User model for Flask-Login
 class User(UserMixin):
