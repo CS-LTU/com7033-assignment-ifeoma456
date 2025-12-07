@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_bcrypt import Bcrypt
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import sqlite3
 import re
 import time
@@ -18,6 +19,31 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.secret_key = 'your-secret-key'
 bcrypt = Bcrypt(app)
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to access this page.'
+
+# User model for Flask-Login
+class User(UserMixin):
+    def __init__(self, id, username, email, role):
+        self.id = id
+        self.username = username
+        self.email = email
+        self.role = role
+
+@login_manager.user_loader
+def load_user(user_id):
+    conn = sqlite3.connect('hospital.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, username, email, role FROM users WHERE id = ?', (int(user_id),))
+    user = cursor.fetchone()
+    conn.close()
+    if user:
+        return User(user[0], user[1], user[2], user[3])
+    return None
 
 # ============================================
 #   AUTO LOGOUT AFTER 3 MINUTES INACTIVITY
