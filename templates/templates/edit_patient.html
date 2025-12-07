@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Patient{% endblock %}
+
+{% block content %}
+
+<style>
+      /* for font-styling */
+    body, p, h1, h2, h3, h4, h5, h6, label, input, select, textarea, button, table, td, th, a, span {
+    font-family: 'Roboto', sans-serif !important;
+   
+    }
+    .edit-card {
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        animation: fadeIn 0.5s ease;
+        background: #ffffff;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .edit-header {
+        background: #55B4AF;
+        color: white;
+        border-radius: 15px 15px 0 0;
+        padding: 20px;
+    }
+
+    .form-control, .form-select, textarea {
+        border-radius: 10px;
+        padding: 12px;
+        border: 1px solid #ced4da;
+        transition: all 0.25s ease;
+    }
+
+    .form-control:focus, .form-select:focus, textarea:focus {
+        border-color: #55B4AF;
+        box-shadow: 0 0 0 0.15rem rgba(85, 180, 175, 0.25);
+        transform: scale(1.01);
+    }
+
+    .btn-primary {
+        border-radius: 10px;
+        padding: 10px 18px;
+    }
+
+</style>
+
+<div class="container py-4">
+
+    <a href="{{ url_for('view_patients') }}" class="btn btn-secondary mb-3">
+        <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+
+    <div class="edit-card">
+
+        <div class="edit-header">
+            <h3 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Patient</h3>
+        </div>
+
+        <div class="card-body p-4">
+
+            <form method="POST">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">First Name *</label>
+                        <input type="text" class="form-control"
+                               name="first_name" value="{{ patient.first_name }}" required>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Last Name *</label>
+                        <input type="text" class="form-control"
+                               name="last_name" value="{{ patient.last_name }}" required>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Gender *</label>
+                        <select class="form-select" name="gender" required>
+                            <option value="Male" {% if patient.gender=='Male' %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if patient.gender=='Female' %}selected{% endif %}>Female</option>
+                            <option value="Other" {% if patient.gender=='Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="text" class="form-control"
+                               name="phone" value="{{ patient.phone }}">
+                    </div>
+
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control"
+                           name="email" value="{{ patient.email }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Address</label>
+                    <textarea rows="3" class="form-control"
+                              name="address">{{ patient.address }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Medical History</label>
+                    <textarea rows="3" class="form-control"
+                              name="medical_history">{{ patient.medical_history }}</textarea>
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn" style="background-color: #55B4AF; color:#fff">
+                        <i class="fas fa-save me-1"></i> Update
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

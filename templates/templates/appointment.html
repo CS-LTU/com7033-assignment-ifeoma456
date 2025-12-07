@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Appointment{% endblock %}
+
+{% block content %}
+
+<style>
+    /* for font-styling */
+    body, p, h1, h2, h3, h4, h5, h6, label, input, select, textarea, button, table, td, th, a, span {
+    font-family: 'Roboto', sans-serif !important;
+    font-size:10px
+    }
+
+    :root {
+        --primary-color: #55B4AF;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        animation: fadeDown 0.6s ease;
+    }
+
+    .page-subtitle {
+        color: #6c757d;
+        animation: fadeDown 0.8s ease;
+    }
+
+    @keyframes fadeDown {
+        from { opacity: 0; transform: translateY(-12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .appointment-card {
+        background: #ffffff;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        animation: fadeUp 0.6s ease;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-control, .form-select {
+        padding: 13px;
+        border-radius: 10px;
+        transition: all .3s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 .15rem rgba(85,180,175,0.3);
+        transform: scale(1.02);
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        border-radius: 10px;
+        padding: 12px 20px;
+        transition: .3s ease;
+    }
+
+    .btn-primary:hover {
+        background: #449b97;
+        transform: translateY(-2px);
+    }
+
+    /* Calendar Section */
+    .calendar-container {
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        padding: 20px;
+        animation: fadeUp 0.7s ease;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.2rem !important;
+        font-weight: 700;
+    }
+
+    .booked-slot {
+        background-color: rgba(255, 99, 71, 0.25) !important;
+        border-left: 4px solid tomato !important;
+        font-weight: 600;
+        color: #444;
+    }
+
+</style>
+
+<div class="container-fluid py-4">
+
+    <h1 class="page-title">Schedule Appointment</h1>
+    <p class="page-subtitle">Create a new appointment for a patient</p>
+
+
+    <div class="row mt-4">
+
+        <!-- ============================
+             APPOINTMENT FORM
+        ============================ -->
+        <div class="col-lg-5 mb-4">
+            <div class="appointment-card">
+
+                <h5 class="mb-3 text-dark">
+                    <i class="fas fa-calendar-plus me-2" style="color: var(--primary-color);"></i>
+                    Appointment Form
+                </h5>
+
+                <form method="POST" action="{{ url_for('appointments') }}">
+
+                    <!-- PATIENT LIST -->
+                    <div class="mb-3">
+                        <label class="form-label">Select Patient *</label>
+                        <select name="patient_id" class="form-select" required>
+                            <option value="">-- Choose Patient --</option>
+
+                            {% for p in patients %}
+                                <option value="{{ p.id }}">
+                                    {{ p.first_name }} {{ p.last_name }} ({{ p.patient_id }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- DOCTOR LIST -->
+                    <div class="mb-3">
+                        <label class="form-label">Select Doctor *</label>
+                        <select name="doctor_id" id="doctor_id" class="form-select" required>
+                            <option value="">Choose Doctor</option>
+
+                            {% for user in doctors %}
+                                <option value="{{ user.id }}">
+                                    Dr. {{ user.username}}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- DATE -->
+                    <div class="mb-3">
+                        <label class="form-label">Appointment Date *</label>
+                        <input type="date"
+                               class="form-control"
+                               name="appointment_date"
+                               id="appointment_date"
+                               required>
+                    </div>
+
+                    <!-- TIME -->
+                    <div class="mb-3">
+                        <label class="form-label">Appointment Time *</label>
+                        <input type="time"
+                               class="form-control"
+                               name="appointment_time"
+                               id="appointment_time"
+                               required>
+                    </div>
+
+                    <button class="btn btn-primary w-100 mt-3">
+                        <i class="fas fa-check-circle me-1"></i>
+                        Schedule Appointment
+                    </button>
+
+                </form>
+
+            </div>
+        </div>
+
+
+        <!-- ============================
+             ADVANCED CALENDAR
+        ============================ -->
+        <div class="col-lg-7">
+            <div class="calendar-container">
+                <h5 class="mb-3 text-dark">
+                    <i class="fas fa-calendar-week me-2" style="color: var(--primary-color);"></i>
+                    Appointment Calendar
+                </h5>
+
+                <div id='calendar'></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- FULLCALENDAR JS -->
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        var bookedEvents = {{ booked_appointments | tojson }};
+
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: 550,
+            events: bookedEvents,
+            eventClassNames: function () {
+                return ['booked-slot'];
+            },
+        });
+
+        calendar.render();
+    });
+</script>
+
+{% endblock %}

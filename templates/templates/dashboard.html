@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+     /* for font-styling */
+    body, p, h1, h2, h3, h4, h5, h6, label, input, select, textarea, button, table, td, th, a, span {
+    font-family: 'Roboto', sans-serif !important;
+    font-size:10px
+    }
+    
+    /* DASHBOARD STYLING */
+    .dashboard-title {
+        font-weight: 700;
+        font-size: 1.8rem;
+        color: #333;
+        animation: fadeDown 0.6s ease;
+    }
+
+    .dashboard-subtitle {
+        color: #6c757d;
+        animation: fadeDown 0.8s ease;
+    }
+
+    @keyframes fadeDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Statistic Cards */
+    .stat-card {
+        border-radius: 15px;
+        padding: 25px;
+        background: white;
+        transition: 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        cursor: pointer;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    }
+    .stat-icon {
+        font-size: 2.3rem;
+        opacity: 0.3;
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-top: 5px;
+    }
+    .stat-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        color: #6c757d;
+    }
+
+    /* Charts Section */
+    .chart-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        animation: fadeUp 0.7s ease;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="container-fluid py-4">
+
+    <h1 class="dashboard-title">Dashboard</h1>
+    <p class="dashboard-subtitle">Welcome back, {{ session.username }}.</p>
+
+    <div class="row mt-4">
+
+        <!-- Total Patients -->
+        <div class="col-md-4 mb-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stat-title">TOTAL PATIENTS</div>
+                        <div class="stat-value">{{ total_patients }}</div>
+                    </div>
+                    <i class="fas fa-hospital-user stat-icon text-primary"></i>
+                </div>
+            </div>
+        </div>
+
+       
+<!-- Total Appointments -->
+        <div class="col-md-4 mb-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stat-title">TOTAL APPOINTMENTS</div>
+                        <div class="stat-value">{{ total_appointments }}</div>
+                    </div>
+                    <i class="fas fa-calendar-check stat-icon text-success"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Bills -->
+        <div class="col-md-4 mb-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="stat-title">PENDING BILLS</div>
+                        <div class="stat-value">{{ pending_bills }}</div>
+                    </div>
+                    <i class="fas fa-file-invoice-dollar stat-icon text-danger"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row">
+
+        <!-- Patients Per Month -->
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <h5>Patients by Month</h5>
+                <canvas id="patientsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Appointments Trend -->
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <h5>Daily Appointment Trend</h5>
+                <canvas id="appointmentsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Billing Status -->
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <h5>Billing Status Distribution</h5>
+                <canvas id="billingChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="patients">
+  <h2>Patients</h2>
+
+  <!-- Admin button — visible only to admin users -->
+  {% if session.get('role') == 'admin' %}
+    <a class="btn btn-admin" href="{{ url_for('admin_dashboard') }}" title="Admin Dashboard">Admin</a>
+  {% endif %}
+
+  <!-- ...existing patient list markup... -->
+</div>
+
+</div>
+
+<!-- Chart JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    /* ============================================
+       DYNAMIC DATA FROM FLASK
+    ============================================ */
+    const patientsMonthly = {{ patients_monthly | tojson }};
+    const appointmentsDaily = {{ appointments_daily | tojson }};
+    const labelsDaily = {{ labels_daily | tojson }};
+    const billingStatus = {{ billing_status | tojson }};
+
+    const primaryColor = "#0d6efd";
+    const successColor = "#B1DCDA";
+    const dangerColor = "#FF8A20";
+    const warningColor = "#ffc107";
+    const darkColor = "#6c757d";
+
+    /* ============================================
+       PATIENTS PER MONTH (LINE)
+    ============================================ */
+    new Chart(document.getElementById('patientsChart'), {
+        type: 'line',
+        data: {
+            labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+            datasets: [{
+                label: "Patients",
+                data: patientsMonthly,
+                borderColor: primaryColor,
+                backgroundColor: "rgba(13,110,253,0.1)",
+                borderWidth: 1.5,
+                tension: 0.4
+            }]
+        }
+    });
+
+    /* ============================================
+       APPOINTMENTS TREND (LINE)
+    ============================================ */
+    new Chart(document.getElementById('appointmentsChart'), {
+        type: 'line',
+        data: {
+            labels: labelsDaily,
+            datasets: [{
+                label: "Appointments",
+                data: appointmentsDaily,
+                borderColor: successColor,
+                backgroundColor: "rgba(25,135,84,0.1)",
+                borderWidth: 1.5,
+                tension: 0.4
+            }]
+        }
+    });
+
+    /* ============================================
+       BILLING STATUS (DOUGHNUT)
+    ============================================ */
+    new Chart(document.getElementById('billingChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ["Paid", "Unpaid", "Cancelled"],
+            datasets: [{
+                data: [
+                    billingStatus.paid,
+                    billingStatus.unpaid,
+                    billingStatus.cancelled
+                ],
+                backgroundColor: [
+                    successColor,
+                    dangerColor,
+                    darkColor
+                ],
+                hoverOffset: 10
+            }]
+        }
+    });
+</script>
+
+{% endblock %}

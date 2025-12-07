@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}System Reports{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0"><i class="fas fa-chart-line me-2"></i>System Reports</h1>
+            <p class="text-muted">Analytics and system insights</p>
+        </div>
+    </div>
+
+    <!-- User Distribution -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-pie-chart me-2"></i>Users by Role</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Role</th>
+                                    <th>Count</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set total_users = users_by_role|map(attribute='count')|sum %}
+                                {% for item in users_by_role %}
+                                <tr>
+                                    <td>
+                                        {% if item.role == 'admin' %}
+                                        <span class="badge bg-danger">Admin</span>
+                                        {% elif item.role == 'doctor' %}
+                                        <span class="badge bg-info">Doctor</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">User</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ item.count }}</strong></td>
+                                    <td>{{ (item.count / total_users * 100) | round(1) }}%</td>
+                                </tr>
+                                {% endfor %}
+                                <tr style="border-top: 2px solid #ddd;">
+                                    <td><strong>Total</strong></td>
+                                    <td><strong>{{ total_users }}</strong></td>
+                                    <td><strong>100%</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Summary -->
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-money-bill me-2"></i>Revenue Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-success bg-opacity-10 rounded">
+                                <h6 class="text-muted mb-1">Paid</h6>
+                                <h4 class="text-success mb-0">${{ "%.2f"|format(revenue_status.paid) }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-warning bg-opacity-10 rounded">
+                                <h6 class="text-muted mb-1">Unpaid</h6>
+                                <h4 class="text-warning mb-0">${{ "%.2f"|format(revenue_status.unpaid) }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-danger bg-opacity-10 rounded">
+                                <h6 class="text-muted mb-1">Cancelled</h6>
+                                <h4 class="text-danger mb-0">${{ "%.2f"|format(revenue_status.cancelled) }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% set total_revenue = revenue_status.paid + revenue_status.unpaid + revenue_status.cancelled %}
+                    <div class="alert alert-info mb-0">
+                        <strong>Total Revenue:</strong> ${{ "%.2f"|format(total_revenue) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Patients Chart -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #55B4AF;">
+                    <h5 class="card-title mb-0"><i class="fas fa-bar-chart me-2"></i>Patients Registered by Month</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="patientsChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<script>
+    // Monthly patients chart
+    const ctx = document.getElementById('patientsChart').getContext('2d');
+    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const patientData = {{ patients_monthly | tojson }};
+    
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: monthLabels,
+            datasets: [{
+                label: 'Patients Registered',
+                data: patientData,
+                backgroundColor: '#55B4AF',
+                borderColor: '#449999',
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

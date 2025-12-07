@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIMS - Login</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: #f5f7fa;
+        }
+
+        /* MAIN WRAPPER SPLIT LEFT/RIGHT */
+        .login-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* LEFT SECTION */
+        .login-left {
+            width: 45%;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            animation: slideInLeft 1s ease forwards;
+            box-shadow: 5px 0 20px rgba(0,0,0,0.05);
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* RIGHT IMAGE SECTION */
+        .login-right {
+            width: 55%;
+            background: url('/static/img/surgery-1822458_1280.jpg');
+            background-size: cover;
+            background-position: center;
+            animation: fadeIn 1.2s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* FORM STYLING */
+        .form-box {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #008080;
+            margin-bottom: 10px;
+            text-align: center;
+
+        }
+
+        .signin-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        select,
+        .form-control {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            transition: 0.3s ease;
+        }
+
+        .form-control:focus,
+        select:focus {
+            border-color: #00b1a7;
+            box-shadow: 0 0 3px rgba(0, 177, 167, 0.4);
+        }
+
+        .btn-login {
+            background: #00b1a7;
+            color: white;
+            padding: 0.75rem;
+            width: 100%;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: 0.3s ease;
+        }
+
+        .btn-login:hover {
+            background: #008f87;
+            transform: translateY(-3px);
+        }
+
+        .forgot {
+            font-size: 0.9rem;
+            text-decoration: none;
+            color: #444;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .forgot:hover {
+            color: #008f87;
+            text-decoration: underline;
+        }
+
+        /* FLASH MESSAGE */
+        .flash-msg {
+            animation: fadeDown 0.6s ease-out;
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+
+    <!-- LEFT SIDE -->
+    <div class="login-left">
+        
+        <div class="form-box">
+
+            <div class="logo-text">Secure Hospital Management System</div>
+            <div class="signin-title">SIGN IN</div>
+
+            <!-- FLASH -->
+            {% with messages = get_flashed_messages(with_categories=True) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} text-center flash-msg">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- DISABLE FORM IF LOCKED OUT -->
+            {% if lockout_remaining and lockout_remaining > 0 %}
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    document.querySelectorAll("input, button, select").forEach(el => {
+                        el.disabled = true;
+                        el.style.opacity = "0.6";   // Visual effect
+                        el.style.cursor = "not-allowed";
+                    });
+                });
+            </script>
+            {% endif %}
+
+            <!-- LOGIN FORM -->
+            <form method="POST" action="{{ url_for('login') }}">
+
+              
+                <div class="mb-3">
+                    <input type="text" name="username" class="form-control"
+                           placeholder="Username" required>
+                </div>
+
+                <div class="mb-3">
+                    <input type="password" name="password" class="form-control"
+                           placeholder="Password" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label">Select Your Role:</label>
+                    <select name="role" id="role" class="form-control" required>
+                        <option value="">-- Choose Role --</option>
+                        <option value="patient">Patient</option>
+                        <option value="admin">Admin</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="employee">Employee</option>
+                        <option value="user">User</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-login">Login</button>
+
+                <!-- <a href="#" class="forgot">Forgot Password?</a> -->
+
+                <p class="text-center mt-3">
+                    Don't have an account?
+                    <a href="{{ url_for('register') }}" style="color:#008f87;">Register</a>
+                </p>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- RIGHT SIDE IMAGE -->
+    <div class="login-right"></div>
+
+</div>
+
+</body>
+</html>
